@@ -24,6 +24,7 @@ class Sprite {
   update() {
     this.draw();
     this.position.y += this.velocity.y;
+    this.position.x += this.velocity.x;
 
     if (this.position.y + this.height + this.velocity.y >= canvas.height) {
       this.velocity.y = 0;
@@ -55,14 +56,78 @@ const enemy = new Sprite({
   },
 });
 
+// Creating keys object to control movement the best way (without stuttering)
+const keys = {
+  a: {
+    pressed: false,
+  },
+  d: {
+    pressed: false,
+  },
+  w: {
+    pressed: false,
+  },
+};
+
+let lastKey;
+
 // Создаем анимационный луп (animation loop)
 const animate = () => {
   window.requestAnimationFrame(animate);
+
   // Clearing canvas to get rid of paint-like effect when animating player and enemy
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   player.update();
   enemy.update();
+
+  // Checking for keys being pressed (and resetting velocity to not move the player when the key is no longer being pressed)
+  player.velocity.x = 0;
+
+  if (keys.a.pressed && lastKey === 'a') {
+    player.velocity.x = -1;
+  } else if (keys.d.pressed && lastKey === 'd') {
+    player.velocity.x = 1;
+  }
 };
 
 animate();
+
+// Tracking player moves
+window.addEventListener('keydown', (e) => {
+  switch (e.key) {
+    case 'd':
+      // Move the player to the right
+      keys.d.pressed = true;
+      lastKey = 'd';
+      break;
+    case 'a':
+      keys.a.pressed = true;
+      lastKey = 'a';
+      break;
+    case 'w':
+      keys.w.pressed = true;
+      lastKey = 'w';
+      break;
+
+    default:
+      break;
+  }
+});
+
+// Cancelling player moves when he stops pressing keys
+window.addEventListener('keyup', (e) => {
+  switch (e.key) {
+    case 'd':
+      keys.d.pressed = false;
+      break;
+    case 'a':
+      keys.a.pressed = false;
+      break;
+    case 'w':
+      keys.w.pressed = false;
+
+    default:
+      break;
+  }
+});
